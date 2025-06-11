@@ -1,12 +1,21 @@
 "use client";
-import React from "react";
+import React, { useState, useEffect } from "react";
 import Chat from "./chat";
 import useConversationStore from "@/stores/useConversationStore";
 import { Item, processMessages } from "@/lib/assistant";
+import { GameState } from "@/lib/gameState";
 
-export default function Assistant() {
-  const { chatMessages, addConversationItem, addChatMessage } =
+interface AssistantProps {
+  gameState: GameState;
+}
+
+export default function Assistant({ gameState}: AssistantProps) {
+  const { chatMessages, addConversationItem, addChatMessage, initializeChat } =
     useConversationStore();
+
+  useEffect(() => {
+    initializeChat(gameState.initialMessage);
+  }, [gameState.initialMessage]);
 
   const handleSendMessage = async (message: string) => {
     if (!message.trim()) return;
@@ -24,7 +33,7 @@ export default function Assistant() {
     try {
       addConversationItem(userMessage);
       addChatMessage(userItem);
-      await processMessages();
+      await processMessages(gameState);
     } catch (error) {
       console.error("Error processing message:", error);
     }
@@ -41,7 +50,7 @@ export default function Assistant() {
     } as any;
     try {
       addConversationItem(approvalItem);
-      await processMessages();
+      await processMessages(gameState);
     } catch (error) {
       console.error("Error sending approval response:", error);
     }

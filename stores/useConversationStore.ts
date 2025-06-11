@@ -1,7 +1,6 @@
 import { create } from "zustand";
 import { Item } from "@/lib/assistant";
 import { ChatCompletionMessageParam } from "openai/resources/chat/completions";
-import { INITIAL_MESSAGE } from "@/config/constants";
 
 interface ConversationState {
   // Items displayed in the chat
@@ -14,16 +13,11 @@ interface ConversationState {
   addChatMessage: (item: Item) => void;
   addConversationItem: (message: ChatCompletionMessageParam) => void;
   rawSet: (state: any) => void;
+  initializeChat: (initialMessage: string) => void;
 }
 
 const useConversationStore = create<ConversationState>((set) => ({
-  chatMessages: [
-    {
-      type: "message",
-      role: "assistant",
-      content: [{ type: "output_text", text: INITIAL_MESSAGE }],
-    },
-  ],
+  chatMessages: [],
   conversationItems: [],
   setChatMessages: (items) => set({ chatMessages: items }),
   setConversationItems: (messages) => set({ conversationItems: messages }),
@@ -34,6 +28,13 @@ const useConversationStore = create<ConversationState>((set) => ({
       conversationItems: [...state.conversationItems, message],
     })),
   rawSet: set,
+  initializeChat: (initialMessage: string) => set({
+    chatMessages: [{
+      type: "message",
+      role: "assistant",
+      content: [{ type: "output_text", text: initialMessage }],
+    }]
+  }),
 }));
 
 export default useConversationStore;

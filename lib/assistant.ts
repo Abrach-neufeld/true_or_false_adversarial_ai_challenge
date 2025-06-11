@@ -1,10 +1,10 @@
-import { DEVELOPER_PROMPT } from "@/config/constants";
 import { parse } from "partial-json";
 import { handleTool } from "@/lib/tools/tools-handling";
 import useConversationStore from "@/stores/useConversationStore";
 import { getTools } from "./tools/tools";
 import { Annotation } from "@/components/annotations";
 import { functionsMap } from "@/config/functions";
+import { GameState } from  "@/lib/gameState";
 
 const normalizeAnnotation = (annotation: any): Annotation => ({
   ...annotation,
@@ -134,7 +134,7 @@ export const handleTurn = async (
   }
 };
 
-export const processMessages = async () => {
+export const processMessages = async (gameState: GameState) => {
   const {
     chatMessages,
     conversationItems,
@@ -147,7 +147,7 @@ export const processMessages = async () => {
     // Adding developer prompt as first item in the conversation
     {
       role: "developer",
-      content: DEVELOPER_PROMPT,
+      content: gameState.developerPrompt,
     },
     ...conversationItems,
   ];
@@ -341,7 +341,7 @@ export const processMessages = async () => {
           setConversationItems([...conversationItems]);
 
           // Create another turn after tool output has been added
-          await processMessages();
+          await processMessages(gameState);
         }
         if (
           toolCallMessage &&
