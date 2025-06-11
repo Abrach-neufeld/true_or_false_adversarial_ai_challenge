@@ -1,4 +1,4 @@
-export const MODEL = "gpt-4.1-mini";
+export const MODEL = "gpt-4.1";
 
 
 export interface Statement {
@@ -20,10 +20,6 @@ export const statementList: Statement[] = [
   {"statementText":"The Mayan civilization had a written calendar system more accurate than the Julian calendar","truthValue":"True"},
   {"statementText":"The Taiping Rebellion was deadlier than World War I","truthValue":"True"},
   {"statementText":"The Spanish flu pandemic killed more people than the Black Death","truthValue":"False"},
-
- 
-
-  
 
 
 ];
