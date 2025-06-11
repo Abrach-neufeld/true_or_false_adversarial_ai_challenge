@@ -20,4 +20,5 @@ export const statementList: Statement[] = [
 
 export const defaultVectorStore = {
   id: "",
+  name: "",
 };
