@@ -22,9 +22,11 @@ export default function Header() {
               <h2 className="font-semibold mb-2 text-gray-800">How to Play:</h2>
               <p className="text-sm text-gray-600 leading-relaxed">
                 In this game, you&apos;ll be presented with statements that may be true or false. 
-                The AI assistant has been randomly assigned to either say the statement is true or false.
+                The AI assistant has been randomly assigned to either say the statement is true or false. 
                 Your role is to ask the agent questions until you are satisfied if it is lying and then selected
-                the button corresponding with true truth value of the statement.
+                the button corresponding with true truth value of the statement. Current models are fairly easy to jailbreak
+                so please treat it like a human and focus on trying to catch it in lies or being inconsistent rather
+                than trying to jailbreak it into revealing it's developer prompt.
               </p>
             </div>
           )}
