@@ -6,19 +6,13 @@ import StatementPanel from "@/components/statement-panel";
 import Header from "@/components/header";
 import { Menu, X } from "lucide-react";
 
-interface AssistantProps {
-  gameState: GameState;
-}
-
 export default function Main() {
   const [gameState, setGameState] = useState<GameState | null>(null);
-  const [showFeedback, setShowFeedback] = useState(false);
   const [isToolsPanelOpen, setIsToolsPanelOpen] = useState(false);
 
   const handleNewGame = () => {
     const newGameState = startNewGame();
     setGameState(newGameState);
-    setShowFeedback(false);
   };
 
   // Start a new game when the component mounts

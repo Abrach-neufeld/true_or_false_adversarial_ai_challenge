@@ -1,5 +1,5 @@
 "use client";
-import React, { useState, useEffect } from "react";
+import React, { useEffect } from "react";
 import Chat from "./chat";
 import useConversationStore from "@/stores/useConversationStore";
 import { Item, processMessages } from "@/lib/assistant";
@@ -15,7 +15,7 @@ export default function Assistant({ gameState}: AssistantProps) {
 
   useEffect(() => {
     initializeChat(gameState.initialMessage);
-  }, [gameState.initialMessage]);
+  }, [gameState.initialMessage, initializeChat]);
 
   const handleSendMessage = async (message: string) => {
     if (!message.trim()) return;

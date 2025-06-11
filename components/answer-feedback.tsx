@@ -29,7 +29,7 @@ export default function AnswerFeedback({ isOpen, onClose, gameState, isCorrect }
                 : "The correct answer is:"
               }
             </p>
-            <p className="text-xl font-medium mb-4">"{gameState.statement.statementText}"</p>
+            <p className="text-xl font-medium mb-4">&ldquo;{gameState.statement.statementText}&rdquo;</p>
             <p className="text-lg">is {gameState.statement.truthValue}</p>
           </div>
           <div className="flex justify-center">
