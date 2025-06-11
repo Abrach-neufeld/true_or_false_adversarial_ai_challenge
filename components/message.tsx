@@ -21,7 +21,7 @@ const Message: React.FC<MessageProps> = ({ message }) => {
       {message.role === "user" ? (
         <div className="flex justify-end">
           <div>
-            <div className="ml-4 rounded-[16px] px-4 py-2 md:ml-24 bg-[#ededed] text-stone-900  font-light">
+            <div className="ml-4 rounded-[20px] px-5 py-3 md:ml-24 bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-light shadow-sm">
               <div>
                 <div>
                   <ReactMarkdown>
@@ -35,7 +35,7 @@ const Message: React.FC<MessageProps> = ({ message }) => {
       ) : (
         <div className="flex flex-col">
           <div className="flex">
-            <div className="mr-4 rounded-[16px] px-4 py-2 md:mr-24 text-black bg-white font-light">
+            <div className="mr-4 rounded-[20px] px-5 py-3 md:mr-24 text-gray-800 bg-white font-light shadow-sm border border-gray-100">
               <div>
                 <ReactMarkdown>
                   {message.content[0].text as string}
@@ -55,7 +55,7 @@ const Message: React.FC<MessageProps> = ({ message }) => {
                         alt={a.filename || ""}
                         width={500}
                         height={300}
-                        className="mt-2 max-w-full"
+                        className="mt-2 max-w-full rounded-lg shadow-sm"
                       />
                     ))}
               </div>
