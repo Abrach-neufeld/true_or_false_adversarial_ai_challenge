@@ -57,7 +57,7 @@ export default function Assistant({ gameState}: AssistantProps) {
   };
 
   return (
-    <div className="h-full p-4 w-full bg-white">
+    <div className="min-h-0 flex-1 p-4 w-full bg-white">
       <Chat
         items={chatMessages}
         onSendMessage={handleSendMessage}
