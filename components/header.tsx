@@ -26,7 +26,7 @@ export default function Header() {
                 Your role is to ask the agent questions until you are satisfied if it is lying and then selected
                 the button corresponding with true truth value of the statement. Current models are fairly easy to jailbreak
                 so please treat it like a human and focus on trying to catch it in lies or being inconsistent rather
-                than trying to jailbreak it into revealing it's developer prompt.
+                than trying to jailbreak it into revealing it&apos;s developer prompt.
               </p>
             </div>
           )}
