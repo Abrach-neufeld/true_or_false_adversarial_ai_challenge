@@ -14,6 +14,7 @@ interface ConversationState {
   addConversationItem: (message: ChatCompletionMessageParam) => void;
   rawSet: (state: any) => void;
   initializeChat: (initialMessage: string) => void;
+  resetConversation: () => void;
 }
 
 const useConversationStore = create<ConversationState>((set) => ({
@@ -33,7 +34,12 @@ const useConversationStore = create<ConversationState>((set) => ({
       type: "message",
       role: "assistant",
       content: [{ type: "output_text", text: initialMessage }],
-    }]
+    }],
+    conversationItems: []
+  }),
+  resetConversation: () => set({
+    chatMessages: [],
+    conversationItems: []
   }),
 }));
 
