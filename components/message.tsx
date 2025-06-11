@@ -2,7 +2,6 @@
 import React from "react";
 import ReactMarkdown from "react-markdown";
 import Image from "next/image";
-import { ExternalLinkIcon } from "lucide-react";
 import { Annotation } from "@/components/annotations";
 
 interface MessageProps {
