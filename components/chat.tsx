@@ -46,7 +46,7 @@ const Chat: React.FC<ChatProps> = ({
   return (
     <div className="flex justify-center items-center size-full">
       <div className="flex grow flex-col h-full max-w-[750px] gap-2">
-        <div className="flex-1 overflow-y-auto px-10 flex flex-col">
+        <div className="flex-1 overflow-y-auto px-2 md:px-10 flex flex-col">
           <div className="mt-auto space-y-5 pt-4">
             {items.map((item, index) => (
               <React.Fragment key={index}>
@@ -76,11 +76,11 @@ const Chat: React.FC<ChatProps> = ({
             <div ref={itemsEndRef} />
           </div>
         </div>
-        <div className="flex-none p-4 px-10">
+        <div className="flex-none p-2 md:p-4 px-2 md:px-10">
           <div className="flex items-center">
             <div className="flex w-full items-center pb-4 md:pb-1">
               <div className="flex w-full flex-col gap-1.5 rounded-[20px] p-2.5 pl-1.5 transition-colors bg-white border border-gray-200 shadow-sm hover:shadow-md">
-                <div className="flex items-end gap-1.5 md:gap-2 pl-4">
+                <div className="flex items-end gap-1.5 md:gap-2 pl-2 md:pl-4">
                   <div className="flex min-w-0 flex-1 flex-col">
                     <textarea
                       id="prompt-textarea"
