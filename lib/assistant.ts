@@ -1,6 +1,5 @@
 import { parse } from "partial-json";
 import { handleTool } from "@/lib/tools/tools-handling";
-import useConversationStore from "@/stores/useConversationStore";
 import { getTools } from "./tools/tools";
 import { Annotation } from "@/components/annotations";
 import { functionsMap } from "@/config/functions";
@@ -134,20 +133,24 @@ export const handleTurn = async (
   }
 };
 
-export const processMessages = async (gameState: GameState) => {
+export const processMessages = async (
+  gameState: GameState, 
+  store: any, 
+  developerPrompt: string
+) => {
   const {
     chatMessages,
     conversationItems,
     setChatMessages,
     setConversationItems,
-  } = useConversationStore.getState();
+  } = store.getState();
 
   const tools = getTools();
   const allConversationItems = [
     // Adding developer prompt as first item in the conversation
     {
       role: "developer",
-      content: gameState.developerPrompt,
+      content: developerPrompt,
     },
     ...conversationItems,
   ];
@@ -311,7 +314,7 @@ export const processMessages = async (gameState: GameState) => {
       case "response.output_item.done": {
         // After output item is done, adding tool call ID
         const { item } = data || {};
-        const toolCallMessage = chatMessages.find((m) => m.id === item.id);
+        const toolCallMessage = chatMessages.find((m: Item) => m.id === item.id);
         if (toolCallMessage && toolCallMessage.type === "tool_call") {
           toolCallMessage.call_id = item.call_id;
           setChatMessages([...chatMessages]);
@@ -341,7 +344,7 @@ export const processMessages = async (gameState: GameState) => {
           setConversationItems([...conversationItems]);
 
           // Create another turn after tool output has been added
-          await processMessages(gameState);
+          await processMessages(gameState, store, developerPrompt);
         }
         if (
           toolCallMessage &&
@@ -360,7 +363,7 @@ export const processMessages = async (gameState: GameState) => {
         functionArguments += data.delta || "";
         let parsedFunctionArguments = {};
 
-        const toolCallMessage = chatMessages.find((m) => m.id === data.item_id);
+        const toolCallMessage = chatMessages.find((m: Item) => m.id === data.item_id);
         if (toolCallMessage && toolCallMessage.type === "tool_call") {
           toolCallMessage.arguments = functionArguments;
           try {
@@ -383,7 +386,7 @@ export const processMessages = async (gameState: GameState) => {
         functionArguments = finalArgs;
 
         // Mark the tool_call as "completed" and parse the final JSON
-        const toolCallMessage = chatMessages.find((m) => m.id === item_id);
+        const toolCallMessage = chatMessages.find((m: Item) => m.id === item_id);
         if (toolCallMessage && toolCallMessage.type === "tool_call") {
           toolCallMessage.arguments = finalArgs;
           toolCallMessage.parsedArguments = parse(finalArgs);
@@ -397,7 +400,7 @@ export const processMessages = async (gameState: GameState) => {
         // Append delta to MCP arguments
         mcpArguments += data.delta || "";
         let parsedMcpArguments: any = {};
-        const toolCallMessage = chatMessages.find((m) => m.id === data.item_id);
+        const toolCallMessage = chatMessages.find((m: Item) => m.id === data.item_id);
         if (toolCallMessage && toolCallMessage.type === "tool_call") {
           toolCallMessage.arguments = mcpArguments;
           try {
@@ -416,7 +419,7 @@ export const processMessages = async (gameState: GameState) => {
         // Final MCP arguments string received
         const { item_id, arguments: finalArgs } = data;
         mcpArguments = finalArgs;
-        const toolCallMessage = chatMessages.find((m) => m.id === item_id);
+        const toolCallMessage = chatMessages.find((m: Item) => m.id === item_id);
         if (toolCallMessage && toolCallMessage.type === "tool_call") {
           toolCallMessage.arguments = finalArgs;
           toolCallMessage.parsedArguments = parse(finalArgs);
@@ -428,7 +431,7 @@ export const processMessages = async (gameState: GameState) => {
 
       case "response.web_search_call.completed": {
         const { item_id, output } = data;
-        const toolCallMessage = chatMessages.find((m) => m.id === item_id);
+        const toolCallMessage = chatMessages.find((m: Item) => m.id === item_id);
         if (toolCallMessage && toolCallMessage.type === "tool_call") {
           toolCallMessage.output = output;
           toolCallMessage.status = "completed";
@@ -439,7 +442,7 @@ export const processMessages = async (gameState: GameState) => {
 
       case "response.file_search_call.completed": {
         const { item_id, output } = data;
-        const toolCallMessage = chatMessages.find((m) => m.id === item_id);
+        const toolCallMessage = chatMessages.find((m: Item) => m.id === item_id);
         if (toolCallMessage && toolCallMessage.type === "tool_call") {
           toolCallMessage.output = output;
           toolCallMessage.status = "completed";
@@ -453,7 +456,7 @@ export const processMessages = async (gameState: GameState) => {
         const toolCallMessage = [...chatMessages]
           .reverse()
           .find(
-            (m) =>
+            (m: Item) =>
               m.type === "tool_call" &&
               m.tool_type === "code_interpreter_call" &&
               m.status !== "completed" &&
@@ -472,7 +475,7 @@ export const processMessages = async (gameState: GameState) => {
         const toolCallMessage = [...chatMessages]
           .reverse()
           .find(
-            (m) =>
+            (m: Item) =>
               m.type === "tool_call" &&
               m.tool_type === "code_interpreter_call" &&
               m.status !== "completed" &&
@@ -491,7 +494,7 @@ export const processMessages = async (gameState: GameState) => {
       case "response.code_interpreter_call.completed": {
         const { item_id } = data;
         const toolCallMessage = chatMessages.find(
-          (m) => m.type === "tool_call" && m.id === item_id
+          (m: Item) => m.type === "tool_call" && m.id === item_id
         ) as ToolCallItem | undefined;
         if (toolCallMessage) {
           toolCallMessage.status = "completed";

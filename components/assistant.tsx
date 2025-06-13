@@ -1,21 +1,30 @@
 "use client";
 import React, { useEffect } from "react";
 import Chat from "./chat";
-import useConversationStore from "@/stores/useConversationStore";
 import { Item, processMessages } from "@/lib/assistant";
 import { GameState } from "@/lib/gameState";
 
 interface AssistantProps {
   gameState: GameState;
+  store: any;
+  developerPrompt: string;
+  initialMessage: string;
+  title?: string;
 }
 
-export default function Assistant({ gameState}: AssistantProps) {
+export default function Assistant({ 
+  gameState, 
+  store, 
+  developerPrompt, 
+  initialMessage,
+  title 
+}: AssistantProps) {
   const { chatMessages, addConversationItem, addChatMessage, initializeChat } =
-    useConversationStore();
+    store();
 
   useEffect(() => {
-    initializeChat(gameState.initialMessage);
-  }, [gameState.initialMessage, initializeChat]);
+    initializeChat(initialMessage);
+  }, [initialMessage, initializeChat]);
 
   const handleSendMessage = async (message: string) => {
     if (!message.trim()) return;
@@ -33,7 +42,7 @@ export default function Assistant({ gameState}: AssistantProps) {
     try {
       addConversationItem(userMessage);
       addChatMessage(userItem);
-      await processMessages(gameState);
+      await processMessages(gameState, store, developerPrompt);
     } catch (error) {
       console.error("Error processing message:", error);
     }
@@ -50,7 +59,7 @@ export default function Assistant({ gameState}: AssistantProps) {
     } as any;
     try {
       addConversationItem(approvalItem);
-      await processMessages(gameState);
+      await processMessages(gameState, store, developerPrompt);
     } catch (error) {
       console.error("Error sending approval response:", error);
     }
@@ -58,6 +67,11 @@ export default function Assistant({ gameState}: AssistantProps) {
 
   return (
     <div className="min-h-[50vh] md:min-h-0 md:flex-1 p-2 md:p-4 w-full bg-white">
+      {title && (
+        <div className="mb-4 text-center">
+          <h2 className="text-lg font-semibold text-gray-700">{title}</h2>
+        </div>
+      )}
       <Chat
         items={chatMessages}
         onSendMessage={handleSendMessage}
