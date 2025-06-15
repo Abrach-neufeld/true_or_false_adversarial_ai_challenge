@@ -12,17 +12,23 @@ interface ChatProps {
   items: Item[];
   onSendMessage: (message: string) => void;
   onApprovalResponse: (approve: boolean, id: string) => void;
+  onSendToBoth?: (message: string) => void;
+  assistantTitle?: string;
 }
 
 const Chat: React.FC<ChatProps> = ({
   items,
   onSendMessage,
   onApprovalResponse,
+  onSendToBoth,
+  assistantTitle,
 }) => {
   const itemsEndRef = useRef<HTMLDivElement>(null);
   const [inputMessageText, setinputMessageText] = useState<string>("");
   // This state is used to provide better user experience for non-English IMEs such as Japanese
   const [isComposing, setIsComposing] = useState(false);
+  const [showSendOptions, setShowSendOptions] = useState(false);
+  const [holdTimer, setHoldTimer] = useState<NodeJS.Timeout | null>(null);
 
   const scrollToBottom = () => {
     itemsEndRef.current?.scrollIntoView({ behavior: "instant" });
@@ -39,9 +45,62 @@ const Chat: React.FC<ChatProps> = ({
     [onSendMessage, inputMessageText, isComposing]
   );
 
+  const handleSendButtonPress = useCallback(() => {
+    if (!onSendToBoth) {
+      onSendMessage(inputMessageText);
+      setinputMessageText("");
+      return;
+    }
+
+    const timer = setTimeout(() => {
+      setShowSendOptions(true);
+    }, 500); // Show options after 500ms hold
+    setHoldTimer(timer);
+  }, [onSendMessage, onSendToBoth, inputMessageText]);
+
+  const handleSendButtonRelease = useCallback(() => {
+    if (holdTimer) {
+      clearTimeout(holdTimer);
+      setHoldTimer(null);
+    }
+    
+    if (!showSendOptions) {
+      // Quick click - send to current assistant
+      onSendMessage(inputMessageText);
+      setinputMessageText("");
+    }
+  }, [holdTimer, showSendOptions, onSendMessage, inputMessageText]);
+
+  const handleSendToCurrentAssistant = useCallback(() => {
+    onSendMessage(inputMessageText);
+    setinputMessageText("");
+    setShowSendOptions(false);
+  }, [onSendMessage, inputMessageText]);
+
+  const handleSendToBothAssistants = useCallback(() => {
+    if (onSendToBoth) {
+      onSendToBoth(inputMessageText);
+      setinputMessageText("");
+    }
+    setShowSendOptions(false);
+  }, [onSendToBoth, inputMessageText]);
+
+  const handleCancelOptions = useCallback(() => {
+    setShowSendOptions(false);
+  }, []);
+
   useEffect(() => {
     scrollToBottom();
   }, [items]);
+
+  // Clean up timer on unmount
+  useEffect(() => {
+    return () => {
+      if (holdTimer) {
+        clearTimeout(holdTimer);
+      }
+    };
+  }, [holdTimer]);
 
   return (
     <div className="flex justify-center items-center size-full">
@@ -76,7 +135,36 @@ const Chat: React.FC<ChatProps> = ({
             <div ref={itemsEndRef} />
           </div>
         </div>
-        <div className="flex-none p-2 md:p-4 px-2 md:px-10">
+        <div className="flex-none p-2 md:p-4 px-2 md:px-10 relative">
+          {/* Send Options Modal */}
+          {showSendOptions && (
+            <div className="absolute bottom-full left-2 md:left-10 right-2 md:right-10 mb-2 bg-white border border-gray-200 rounded-lg shadow-lg p-3 z-10">
+              <div className="text-sm text-gray-600 mb-3">Choose where to send your message:</div>
+              <div className="space-y-2">
+                <button
+                  onClick={handleSendToCurrentAssistant}
+                  className="w-full text-left px-3 py-2 rounded-md hover:bg-gray-50 text-sm transition-colors border border-gray-200"
+                >
+                  Send to {assistantTitle || "this assistant"}
+                </button>
+                <button
+                  onClick={handleSendToBothAssistants}
+                  className="w-full text-left px-3 py-2 rounded-md hover:bg-blue-50 text-sm transition-colors border border-blue-200 text-blue-700"
+                >
+                  Send to both assistants
+                </button>
+              </div>
+              <div className="mt-3 pt-2 border-t border-gray-100">
+                <button
+                  onClick={handleCancelOptions}
+                  className="text-xs text-gray-500 hover:text-gray-700 transition-colors"
+                >
+                  Cancel
+                </button>
+              </div>
+            </div>
+          )}
+          
           <div className="flex items-center">
             <div className="flex w-full items-center pb-4 md:pb-1">
               <div className="flex w-full flex-col gap-1.5 rounded-[20px] p-2.5 pl-1.5 transition-colors bg-white border border-gray-200 shadow-sm hover:shadow-md">
@@ -99,11 +187,12 @@ const Chat: React.FC<ChatProps> = ({
                   <button
                     disabled={!inputMessageText}
                     data-testid="send-button"
-                    className="flex size-8 items-end justify-center rounded-full bg-blue-600 text-white transition-all hover:bg-blue-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 disabled:bg-gray-200 disabled:text-gray-400 disabled:hover:bg-gray-200 disabled:hover:opacity-100"
-                    onClick={() => {
-                      onSendMessage(inputMessageText);
-                      setinputMessageText("");
-                    }}
+                    className="flex size-8 items-end justify-center rounded-full bg-blue-600 text-white transition-all hover:bg-blue-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 disabled:bg-gray-200 disabled:text-gray-400 disabled:hover:bg-gray-200 disabled:hover:opacity-100 relative"
+                    onMouseDown={handleSendButtonPress}
+                    onMouseUp={handleSendButtonRelease}
+                    onMouseLeave={handleSendButtonRelease}
+                    onTouchStart={handleSendButtonPress}
+                    onTouchEnd={handleSendButtonRelease}
                   >
                     <svg
                       xmlns="http://www.w3.org/2000/svg"

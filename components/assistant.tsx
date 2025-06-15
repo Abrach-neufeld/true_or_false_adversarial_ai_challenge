@@ -10,6 +10,7 @@ interface AssistantProps {
   developerPrompt: string;
   initialMessage: string;
   title?: string;
+  onSendToBoth?: (message: string) => void;
 }
 
 export default function Assistant({ 
@@ -17,7 +18,8 @@ export default function Assistant({
   store, 
   developerPrompt, 
   initialMessage,
-  title 
+  title,
+  onSendToBoth
 }: AssistantProps) {
   const { chatMessages, addConversationItem, addChatMessage, initializeChat } =
     store();
@@ -76,6 +78,8 @@ export default function Assistant({
         items={chatMessages}
         onSendMessage={handleSendMessage}
         onApprovalResponse={handleApprovalResponse}
+        onSendToBoth={onSendToBoth}
+        assistantTitle={title}
       />
     </div>
   );

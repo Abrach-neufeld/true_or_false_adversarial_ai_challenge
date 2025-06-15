@@ -5,6 +5,7 @@ import { startNewGame, GameState } from "@/lib/gameState";
 import StatementPanel from "@/components/statement-panel";
 import Header from "@/components/header";
 import { useConversationStore1, useConversationStore2 } from "@/stores/useConversationStore";
+import { Item, processMessages } from "@/lib/assistant";
 
 export default function Main() {
   const [gameState, setGameState] = useState<GameState | null>(null);
@@ -12,6 +13,41 @@ export default function Main() {
   const handleNewGame = () => {
     const newGameState = startNewGame();
     setGameState(newGameState);
+  };
+
+  const handleSendToBoth = async (message: string) => {
+    if (!message.trim() || !gameState) return;
+
+    const userItem: Item = {
+      type: "message",
+      role: "user",
+      content: [{ type: "input_text", text: message.trim() }],
+    };
+    const userMessage: any = {
+      role: "user",
+      content: message.trim(),
+    };
+
+    // Get both stores
+    const store1 = useConversationStore1.getState();
+    const store2 = useConversationStore2.getState();
+
+    try {
+      // Add message to both stores simultaneously
+      store1.addConversationItem(userMessage);
+      store1.addChatMessage(userItem);
+      
+      store2.addConversationItem(userMessage);
+      store2.addChatMessage(userItem);
+
+      // Process messages for both assistants simultaneously
+      await Promise.all([
+        processMessages(gameState, useConversationStore1, gameState.developerPrompt1),
+        processMessages(gameState, useConversationStore2, gameState.developerPrompt2)
+      ]);
+    } catch (error) {
+      console.error("Error sending message to both assistants:", error);
+    }
   };
 
   useEffect(() => {
@@ -51,6 +87,7 @@ export default function Main() {
               developerPrompt={gameState.developerPrompt1}
               initialMessage={gameState.initialMessage1}
               title="Assistant A"
+              onSendToBoth={handleSendToBoth}
             />
           </div>
           
@@ -62,6 +99,7 @@ export default function Main() {
               developerPrompt={gameState.developerPrompt2}
               initialMessage={gameState.initialMessage2}
               title="Assistant B"
+              onSendToBoth={handleSendToBoth}
             />
           </div>
         </div>
