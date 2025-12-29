@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
+import { useSession } from "next-auth/react";
 import { GameState } from "@/lib/gameState";
 import { Button } from "./ui/button";
 import AnswerFeedback from "./answer-feedback";
@@ -8,18 +9,67 @@ import AnswerFeedback from "./answer-feedback";
 interface StatementPanelProps {
   gameState: GameState;
   onNewGame: () => void;
+  onAttemptRecorded?: (statementId: string) => void;
 }
 
-export default function StatementPanel({ gameState, onNewGame }: StatementPanelProps) {
-  const [isCorrect, setIsCorrect] = useState(false);
+export default function StatementPanel({ gameState, onNewGame, onAttemptRecorded }: StatementPanelProps) {
+  const { data: session } = useSession();
+  const [isCorrect, setIsCorrect] = useState<boolean | null>(null);
+  const [isSkipped, setIsSkipped] = useState(false);
   const [showFeedback, setShowFeedback] = useState(false);
 
-  const handleAnswer = (userAnswer: string) => {
+  const handleAnswer = async (userAnswer: string) => {
     if (!gameState) return;
-    
+
     const correct = userAnswer === gameState.statement.truthValue;
     setIsCorrect(correct);
+    setIsSkipped(false);
     setShowFeedback(true);
+
+    // Save attempt if user is logged in
+    if (session?.user?.id) {
+      try {
+        await fetch("/api/attempts", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            statementId: gameState.statement.id,
+            userGuess: userAnswer,
+            isCorrect: correct,
+          }),
+        });
+        // Notify parent that an attempt was recorded
+        onAttemptRecorded?.(gameState.statement.id);
+      } catch (error) {
+        console.error("Failed to record attempt:", error);
+      }
+    }
+  };
+
+  const handleSkip = async () => {
+    if (!gameState) return;
+
+    setIsSkipped(true);
+    setIsCorrect(null);
+    setShowFeedback(true);
+
+    // Record skip attempt if user is logged in
+    if (session?.user?.id) {
+      try {
+        await fetch("/api/attempts", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            statementId: gameState.statement.id,
+            skipped: true,
+          }),
+        });
+        // Notify parent that an attempt was recorded (for no-repeat tracking)
+        onAttemptRecorded?.(gameState.statement.id);
+      } catch (error) {
+        console.error("Failed to record skip:", error);
+      }
+    }
   };
 
   if (!gameState) return null;
@@ -50,17 +100,17 @@ export default function StatementPanel({ gameState, onNewGame }: StatementPanelP
           </Button>
         </div>
         <div>
-          <Button 
-            variant="outline" 
+          <Button
+            variant="outline"
             className="w-20 md:w-24 bg-gray-100 hover:bg-gray-200 text-gray-700 border-gray-200 hover:border-gray-300 transition-colors shadow-sm hover:shadow"
-            onClick={onNewGame}
+            onClick={handleSkip}
           >
             Skip
           </Button>
         </div>
       </div>
 
-      <AnswerFeedback 
+      <AnswerFeedback
         isOpen={showFeedback}
         onClose={() => {
           setShowFeedback(false);
@@ -68,6 +118,7 @@ export default function StatementPanel({ gameState, onNewGame }: StatementPanelP
         }}
         gameState={gameState}
         isCorrect={isCorrect}
+        isSkipped={isSkipped}
       />
     </div>
   );

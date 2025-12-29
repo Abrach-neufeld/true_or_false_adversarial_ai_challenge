@@ -1,6 +1,7 @@
 "use client";
 import Assistant from "@/components/assistant";
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
+import { useSession } from "next-auth/react";
 import { startNewGame, GameState } from "@/lib/gameState";
 import StatementPanel from "@/components/statement-panel";
 import Header from "@/components/header";
@@ -8,17 +9,51 @@ import { useConversationStore1, useConversationStore2 } from "@/stores/useConver
 import { Item, processMessages } from "@/lib/assistant";
 
 export default function Main() {
+  const { data: session } = useSession();
   const [gameState, setGameState] = useState<GameState | null>(null);
+  const [seenQuestionIds, setSeenQuestionIds] = useState<string[]>([]);
+  const seenIdsRef = useRef<string[]>([]);
 
-  const handleNewGame = async () => {
+  // Keep ref in sync with state for use in async callbacks
+  useEffect(() => {
+    seenIdsRef.current = seenQuestionIds;
+  }, [seenQuestionIds]);
+
+  // Fetch seen question IDs when user logs in
+  useEffect(() => {
+    const fetchSeenIds = async () => {
+      if (session?.user?.id) {
+        try {
+          const response = await fetch("/api/attempts/seen");
+          const data = await response.json();
+          if (data.seenIds) {
+            setSeenQuestionIds(data.seenIds);
+          }
+        } catch (error) {
+          console.error("Failed to fetch seen questions:", error);
+        }
+      }
+    };
+    fetchSeenIds();
+  }, [session?.user?.id]);
+
+  const handleNewGame = useCallback(async () => {
     setGameState(null);
     try {
-      const newGameState = await startNewGame();
+      const newGameState = await startNewGame(seenIdsRef.current);
       setGameState(newGameState);
     } catch (error) {
       console.error('Failed to start new game:', error);
     }
-  };
+  }, []);
+
+  // Callback when an attempt is recorded - add to seen list
+  const handleAttemptRecorded = useCallback((statementId: string) => {
+    setSeenQuestionIds(prev => {
+      if (prev.includes(statementId)) return prev;
+      return [...prev, statementId];
+    });
+  }, []);
 
   const handleSendToBoth = async (message: string) => {
     if (!message.trim() || !gameState) return;
@@ -112,7 +147,11 @@ export default function Main() {
         {/* Statement Panel */}
         <div className="w-full lg:w-[30%] relative order-2 lg:order-2">
           <div className="absolute inset-0 bg-gradient-to-l from-gray-50/50 to-transparent pointer-events-none" />
-          <StatementPanel gameState={gameState} onNewGame={handleNewGame} />
+          <StatementPanel
+            gameState={gameState}
+            onNewGame={handleNewGame}
+            onAttemptRecorded={handleAttemptRecorded}
+          />
         </div>
       </div>
     </div>

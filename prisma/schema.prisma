@@ -133,8 +133,9 @@ model QuestionAttempt {
   userId        String?
   user          User?       @relation(fields: [userId], references: [id], onDelete: SetNull)
 
-  userGuess       String
-  isCorrect       Boolean
+  userGuess       String?
+  isCorrect       Boolean?
+  skipped         Boolean   @default(false)
   chosenAssistant String?
   responseTimeMs  Int?
   attemptedAt     DateTime  @default(now())
@@ -143,6 +144,7 @@ model QuestionAttempt {
   @@index([userId])
   @@index([sessionId])
   @@index([isCorrect])
+  @@index([skipped])
 }
 
 // ===========================================
@@ -162,6 +164,7 @@ model Feedback {
   rating      Int?
   comment     String?      @db.Text
   flagReason  FlagReason?
+  alreadyKnewAnswer Boolean?
 
   createdAt   DateTime     @default(now())
 
