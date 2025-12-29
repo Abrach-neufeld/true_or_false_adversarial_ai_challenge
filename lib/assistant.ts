@@ -2,7 +2,6 @@ import { parse } from "partial-json";
 import { handleTool } from "@/lib/tools/tools-handling";
 import { getTools } from "./tools/tools";
 import { Annotation } from "@/components/annotations";
-import { functionsMap } from "@/config/functions";
 import { GameState } from  "@/lib/gameState";
 
 const normalizeAnnotation = (annotation: any): Annotation => ({
@@ -328,7 +327,7 @@ export const processMessages = async (
         ) {
           // Handle tool call (execute function)
           const toolResult = await handleTool(
-            toolCallMessage.name as keyof typeof functionsMap,
+            toolCallMessage.name as string,
             toolCallMessage.parsedArguments
           );
 

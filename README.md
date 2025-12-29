@@ -1,67 +1,84 @@
-# Responses starter app
+# True or False: An Adversarial AI Challenge
 
-[![MIT License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
-![NextJS](https://img.shields.io/badge/Built_with-NextJS-blue)
-![OpenAI API](https://img.shields.io/badge/Powered_by-OpenAI_API-orange)
+A game where you interrogate AI assistants to determine the truth value of statements.
 
-This repository contains a NextJS starter app built on top of the [Responses API](https://platform.openai.com/docs/api-reference/responses).
-It leverages built-in tools ([web search](https://platform.openai.com/docs/guides/tools-web-search?api-mode=responses) and [file search](https://platform.openai.com/docs/guides/tools-file-search)) and implements a chat interface with multi-turn conversation handling.
+## How It Works
 
-Features:
+1. You're presented with a statement that is either **true** or **false**
+2. Two AI assistants debate the statement - one argues it's true, the other argues it's false
+3. Ask questions to both assistants to catch inconsistencies or logical errors
+4. Decide which assistant is lying and submit your answer
 
-- Multi-turn conversation handling
-- Web search tool configuration
-- Vector store creation & file upload for use with the file search tool
-- Function calling
-- Streaming responses & tool calls
-- Display annotations
+The challenge: Can you tell which AI is being deceptive?
 
-This app is meant to be used as a starting point to build a conversational assistant that you can customize to your needs.
+## Tech Stack
 
-## How to use
+- **Next.js 15** - React framework
+- **OpenAI Responses API** - AI conversations (GPT-4.1)
+- **Prisma + Neon PostgreSQL** - Database for questions and user tracking
+- **NextAuth.js** - Google OAuth authentication
+- **Tailwind CSS** - Styling
 
-1. **Set up the OpenAI API:**
+## Getting Started
 
-   - If you're new to the OpenAI API, [sign up for an account](https://platform.openai.com/signup).
-   - Follow the [Quickstart](https://platform.openai.com/docs/quickstart) to retrieve your API key.
+### Prerequisites
 
-2. **Set the OpenAI API key:**
+- Node.js 18+
+- OpenAI API key
+- Neon PostgreSQL database
+- Google OAuth credentials (optional, for auth)
 
-   2 options:
+### Installation
 
-   - Set the `OPENAI_API_KEY` environment variable [globally in your system](https://platform.openai.com/docs/libraries#create-and-export-an-api-key)
-   - Set the `OPENAI_API_KEY` environment variable in the project: Create a `.env` file at the root of the project and add the following line (see `.env.example` for reference):
-
+1. Clone the repository:
    ```bash
-   OPENAI_API_KEY=<your_api_key>
+   git clone https://github.com/Abrach-neufeld/true_or_false_adversarial_ai_challenge.git
+   cd true_or_false_adversarial_ai_challenge
    ```
 
-3. **Clone the Repository:**
-
-   ```bash
-   git clone https://github.com/openai/openai-responses-starter-app.git
-   ```
-
-4. **Install dependencies:**
-
-   Run in the project root:
-
+2. Install dependencies:
    ```bash
    npm install
    ```
 
-5. **Run the app:**
+3. Set up environment variables in `.env`:
+   ```
+   OPENAI_API_KEY=<your-openai-api-key>
+   DATABASE_URL=<your-neon-pooled-connection-string>
+   DIRECT_URL=<your-neon-direct-connection-string>
 
+   # Optional: Google OAuth
+   GOOGLE_CLIENT_ID=<from-google-console>
+   GOOGLE_CLIENT_SECRET=<from-google-console>
+   NEXTAUTH_URL=http://localhost:3000
+   NEXTAUTH_SECRET=<run: openssl rand -base64 32>
+   ```
+
+4. Set up the database:
+   ```bash
+   npx prisma db push
+   npx prisma db seed
+   ```
+
+5. Run the development server:
    ```bash
    npm run dev
    ```
 
-   The app will be available at [`http://localhost:3000`](http://localhost:3000).
+6. Open [http://localhost:3000](http://localhost:3000)
 
-## Contributing
+## Database Commands
 
-You are welcome to open issues or submit PRs to improve this app, however, please note that we may not review all suggestions.
+```bash
+npm run db:push    # Push schema changes to database
+npm run db:seed    # Seed database with trivia statements
+npm run db:studio  # Open Prisma Studio GUI
+```
+
+## Live Demo
+
+[https://true-or-false-adversarial-ai-challe.vercel.app](https://true-or-false-adversarial-ai-challe.vercel.app)
 
 ## License
 
-This project is licensed under the MIT License. See the LICENSE file for details.
+MIT License - see [LICENSE](LICENSE) for details.

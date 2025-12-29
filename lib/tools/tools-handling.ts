@@ -1,12 +1,5 @@
-import { functionsMap } from "../../config/functions";
-
-type ToolName = keyof typeof functionsMap;
-
-export const handleTool = async (toolName: ToolName, parameters: any) => {
-  console.log("Handle tool", toolName, parameters);
-  if (functionsMap[toolName]) {
-    return await functionsMap[toolName](parameters);
-  } else {
-    throw new Error(`Unknown tool: ${toolName}`);
-  }
+// Simplified - function calling not used in this game
+export const handleTool = async (toolName: string, parameters: any) => {
+  console.log("Tool call received but not handled:", toolName, parameters);
+  return { error: "Function calling not enabled" };
 };
