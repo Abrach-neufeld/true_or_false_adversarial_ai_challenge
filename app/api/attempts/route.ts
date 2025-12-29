@@ -14,6 +14,12 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Check if testing mode is enabled - skip database writes
+    const testingMode = request.cookies.get("testing_mode")?.value === "true";
+    if (testingMode) {
+      return NextResponse.json({ success: true, testingMode: true });
+    }
+
     const body = await request.json();
     const { statementId, userGuess, isCorrect, skipped } = body;
 

@@ -5,6 +5,12 @@ import prisma from "@/lib/prisma";
 
 export async function POST(request: NextRequest) {
   try {
+    // Check if testing mode is enabled - skip database writes
+    const testingMode = request.cookies.get("testing_mode")?.value === "true";
+    if (testingMode) {
+      return NextResponse.json({ success: true, testingMode: true });
+    }
+
     const session = await getServerSession(authOptions);
     const body = await request.json();
     const { statementId, rating, alreadyKnewAnswer } = body;
