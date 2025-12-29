@@ -1,16 +1,28 @@
-import { Info } from "lucide-react";
+import { Info, BarChart2 } from "lucide-react";
 import { useState } from "react";
+import { useSession } from "next-auth/react";
+import Link from "next/link";
 import UserMenu from "./user-menu";
 import TestingModeToggle from "./testing-mode-toggle";
 
 export default function Header() {
+  const { data: session } = useSession();
   const [showInfo, setShowInfo] = useState(false);
 
   return (
     <div className="relative w-full bg-white shadow-sm py-6 px-6 border-b border-gray-100">
       <div className="flex items-center justify-between">
-        <div className="w-32">
+        <div className="w-32 flex items-center gap-2">
           <TestingModeToggle />
+          {session && (
+            <Link
+              href="/stats"
+              className="flex items-center gap-1 px-2 py-1 text-sm text-gray-600 hover:text-blue-600 transition-colors"
+            >
+              <BarChart2 className="w-4 h-4" />
+              Stats
+            </Link>
+          )}
         </div>
         <div className="flex items-center gap-3">
           <h1 className="text-2xl font-bold text-center bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
