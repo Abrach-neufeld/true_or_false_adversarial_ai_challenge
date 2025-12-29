@@ -1,0 +1,175 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+// ===========================================
+// CORE MODELS
+// ===========================================
+
+model Statement {
+  id            String   @id @default(cuid())
+  statementText String   @db.Text
+  truthValue    String
+  category      Category @relation(fields: [categoryId], references: [id])
+  categoryId    String
+
+  difficulty    Int?     @default(1)
+  isActive      Boolean  @default(true)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  attempts      QuestionAttempt[]
+  feedback      Feedback[]
+
+  @@index([categoryId])
+  @@index([isActive])
+}
+
+model Category {
+  id          String      @id @default(cuid())
+  name        String      @unique
+  description String?
+  statements  Statement[]
+  createdAt   DateTime    @default(now())
+
+  @@index([name])
+}
+
+// ===========================================
+// USER & AUTH MODELS
+// ===========================================
+
+model User {
+  id            String    @id @default(cuid())
+  email         String?   @unique
+  name          String?
+  image         String?
+  emailVerified DateTime?
+  anonymousId   String?   @unique
+
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  sessions      GameSession[]
+  attempts      QuestionAttempt[]
+  feedback      Feedback[]
+  accounts      Account[]
+
+  @@index([email])
+  @@index([anonymousId])
+}
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String? @db.Text
+  access_token      String? @db.Text
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String? @db.Text
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+  @@index([userId])
+}
+
+// ===========================================
+// GAME SESSION TRACKING
+// ===========================================
+
+model GameSession {
+  id          String    @id @default(cuid())
+  userId      String?
+  user        User?     @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  startedAt   DateTime  @default(now())
+  endedAt     DateTime?
+
+  totalQuestions Int    @default(0)
+  correctAnswers Int    @default(0)
+
+  attempts    QuestionAttempt[]
+
+  @@index([userId])
+  @@index([startedAt])
+}
+
+// ===========================================
+// QUESTION ATTEMPT TRACKING
+// ===========================================
+
+model QuestionAttempt {
+  id            String      @id @default(cuid())
+
+  statementId   String
+  statement     Statement   @relation(fields: [statementId], references: [id], onDelete: Cascade)
+
+  sessionId     String
+  session       GameSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+
+  userId        String?
+  user          User?       @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  userGuess       String
+  isCorrect       Boolean
+  chosenAssistant String?
+  responseTimeMs  Int?
+  attemptedAt     DateTime  @default(now())
+
+  @@index([statementId])
+  @@index([userId])
+  @@index([sessionId])
+  @@index([isCorrect])
+}
+
+// ===========================================
+// FEEDBACK MODEL
+// ===========================================
+
+model Feedback {
+  id          String       @id @default(cuid())
+
+  statementId String
+  statement   Statement    @relation(fields: [statementId], references: [id], onDelete: Cascade)
+
+  userId      String?
+  user        User?        @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  type        FeedbackType
+  rating      Int?
+  comment     String?      @db.Text
+  flagReason  FlagReason?
+
+  createdAt   DateTime     @default(now())
+
+  @@index([statementId])
+  @@index([userId])
+  @@index([type])
+}
+
+enum FeedbackType {
+  FLAG
+  RATING
+  COMMENT
+}
+
+enum FlagReason {
+  INCORRECT_ANSWER
+  AMBIGUOUS
+  OUTDATED
+  OFFENSIVE
+  DUPLICATE
+  OTHER
+}

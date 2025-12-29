@@ -10,9 +10,14 @@ import { Item, processMessages } from "@/lib/assistant";
 export default function Main() {
   const [gameState, setGameState] = useState<GameState | null>(null);
 
-  const handleNewGame = () => {
-    const newGameState = startNewGame();
-    setGameState(newGameState);
+  const handleNewGame = async () => {
+    setGameState(null);
+    try {
+      const newGameState = await startNewGame();
+      setGameState(newGameState);
+    } catch (error) {
+      console.error('Failed to start new game:', error);
+    }
   };
 
   const handleSendToBoth = async (message: string) => {
